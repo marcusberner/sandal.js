@@ -68,11 +68,16 @@ var Sandal = (function () {
 
     _createObjectSync = function (item, dependencies) {
         if (item.ctor) {
-			var obj, O = function () {};
-			O.prototype = item.ctor.prototype;
-			obj = new O();
-            item.ctor.prototype.constructor.apply(obj, dependencies);
-            return obj;
+			if ('bind' in Function.prototype) {
+				dependencies.unshift(null);
+				var obj, O = Function.prototype.bind.apply(item.ctor, dependencies);
+				obj = new O();
+			} else {
+				var obj, O = function () {};
+				O.prototype = item.ctor.prototype;
+				obj = new O();
+				item.ctor.prototype.constructor.apply(obj, dependencies);
+			}
         } else {
             return item.factory.apply(null, dependencies);
         }
